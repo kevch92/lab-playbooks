@@ -1,0 +1,45 @@
+- name: Build and run Python app in Docker
+  hosts: slave01
+  become: true
+  tasks:
+
+    - name: Download cart.zip
+      ansible.builtin.get_url:
+        url: http://18.209.173.52:8081/repository/maven-releases/com/anil/cart/0.0.1/cart.zip
+        dest: /home/ubuntu/cart.zip
+
+    - name: Ensure /home/ubuntu/cartapp directory exists
+      ansible.builtin.file:
+        path: /home/ubuntu/cartapp
+        state: directory
+        owner: ubuntu
+        group: ubuntu
+        mode: '0755'
+
+    - name: Unzip cart.zip to /home/ubuntu/cartapp
+      ansible.builtin.unarchive:
+        src: /home/ubuntu/cart.zip
+        dest: /home/ubuntu/cartapp
+        remote_src: yes
+
+    - name: Build Docker image from /home/ubuntu/cartapp
+      docker_image:
+        name: cart
+        source: build
+        build:
+          path: /home/ubuntu/cartapp
+
+    - name: Remove existing container if exists
+      docker_container:
+        name: cart_container
+        state: absent
+        force_kill: true
+
+    - name: Run Python Docker container
+      docker_container:
+        name: cart_container
+        image: cart
+        state: started
+        restart_policy: always
+        ports:
+          - "6969:5000"
