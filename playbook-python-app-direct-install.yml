@@ -1,31 +1,41 @@
 ---
 - name: Deploy zipped Cart from Nexus on Slave 2
-  hosts: ubuntu2
+  hosts: ubuntu2 
   become: true
   tasks:
 
-   - name: Update Ubuntu to latest Patch
-     ansible.builtin.apt:
-       update_cache: yes
+    - name: Update Ubuntu to latest Patch
+      ansible.builtin.apt:
+        update_cache: yes
 
-   - name: Ensure Python3, Pip are installed
-     ansible.builtin.apt:
-       name:
-         - python3
-         - pip
-       state: present
-       update_cache: yes
+    - name: Ensure Python3 and venv are installed
+      ansible.builtin.apt:
+        name:
+          - python3
+          - python3-venv 
+        state: present
+        update_cache: yes
 
-   - name: Unzip a file that is downloaded from Nexus
-     ansible.builtin.unarchive:
-       src: http://18.209.173.52:8081/repository/maven-releases/com/anil/cart/0.0.1/cart.zip
-       dest: /home/ubuntu
-       remote_src: yes
+    - name: Unzip a file that is downloaded from Nexus
+      ansible.builtin.unarchive:
+        src: http://18.209.173.52:8081/repository/maven-releases/com/anil/cart/0.0.1/cart.zip
+        dest: /home/ubuntu
+        remote_src: yes 
 
-   - name: Install specified python requirements
-     ansible.builtin.pip:
-       name: Flask
-       state: present
+    - name: Create Python virtual environment
+      ansible.builtin.command: python3 -m venv /home/ubuntu/cart_venv
+      args:
+        creates: /home/ubuntu/cart_venv/bin/activate 
 
-   - name: Execute cart using script module
-     ansible.builtin.script: /home/ubuntu/app.py
+    - name: Install specified python requirements (Flask) into virtual environment
+      ansible.builtin.pip:
+        name: Flask
+        virtualenv: /home/ubuntu/cart_venv 
+        state: present
+
+    - name: Execute cart using script module
+      ansible.builtin.script: /home/ubuntu/app.py
+      args:
+        chdir: /home/ubuntu/ 
+      environment:
+        PATH: "/home/ubuntu/cart_venv/bin:{{ ansible_env.PATH }}" 
