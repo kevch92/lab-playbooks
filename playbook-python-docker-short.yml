@@ -1,0 +1,23 @@
+---
+- name: Deploy Python App from Zip Archive
+  hosts: ubuntu
+  become: true
+
+  tasks:
+    - name: Download cart.zip from Nexus
+      ansible.builtin.get_url:
+        url:   http://18.209.173.52:8081/repository/maven-releases/com/anil/cart/0.0.1/cart.zip
+        dest: /home/ubuntu/cart.zip
+        mode: '0644'
+
+    - name: Unarchive app package
+      ansible.builtin.unarchive:
+        src:        /home/ubuntu/cart.zip
+        dest:       /home/ubuntu/
+        remote_src: yes
+
+    - name: Launch Python app in background
+      ansible.builtin.shell: |
+        nohup python3 app.py > output.log 2>&1 &
+      args:
+        chdir: /home/ubuntu/
