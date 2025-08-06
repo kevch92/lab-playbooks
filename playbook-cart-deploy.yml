@@ -7,7 +7,7 @@
        update_cache: yes
        
     - name: Get cart
-      community.docker.docker_image:
+      docker_image:
         name: kvtest92/cartrepo:v1
         source: pull
         
@@ -22,7 +22,7 @@
         password: 
        
     - name: Run cart image to container with specified details
-      community.docker.docker_container:
+      docker_container:
         name: cart-container3
         image:  kvtest92/cartrepo:v1
         state: started
