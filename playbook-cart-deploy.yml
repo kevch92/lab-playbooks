@@ -2,7 +2,10 @@
 - hosts: slave01
   become: true
   tasks:
-
+   - name: update ubuntu
+     ansible.builtin.apt:
+       update_cache: yes
+       
     - name: Get cart
       community.docker.docker_image:
         name: kvtest92/cartrepo:v1
