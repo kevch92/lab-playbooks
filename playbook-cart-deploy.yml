@@ -7,7 +7,17 @@
       community.docker.docker_image:
         name: kvtest92/cartrepo:v1
         source: pull
+        
+    - name: Install Docker
+       ansible.builtin.apt:
+       name: docker.io
+       state: present
 
+    - name: Log in to Docker registry
+      docker_login:
+        username: 
+        password: 
+       
     - name: Run cart image to container with specified details
       community.docker.docker_container:
         name: cart-container3
